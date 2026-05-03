@@ -619,8 +619,8 @@
 
   <script>
   // ─── CONFIG ────────────────────────────────────────────
-  const API_KEY = 'AIzaSyA-6HzbG1eRDo82BJB0yt08BPheTfMeg5w';
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-002:generateContent?key=${API_KEY}`;
+  const API_KEY = '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';
+  const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
   const SYSTEM = `# IDENTITÉ ET MISSION
 Tu es le "Garde du Corps Digestif", un nutritionniste expert du Syndrome de l'Intestin Irritable (SII), spécialisé dans l'approche Low FODMAP, l'inflammation digestive et le métabolisme sportif.
@@ -720,37 +720,43 @@ Génère mon protocole de la journée en JSON.`;
     document.getElementById('loading-screen').classList.add('show');
 
     try {
-      const res = await fetch(GEMINI_URL, {
+      const res = await fetch(GROQ_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_KEY}`
+        },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM }] },
-          contents: [{ role: 'user', parts: [{ text: userMsg }] }],
-          generationConfig: { temperature: 0.65, maxOutputTokens: 1000 }
+          model: "llama3-70b-8192", // Modèle rapide et intelligent sur Groq
+          messages: [
+            { role: "system", content: SYSTEM },
+            { role: "user", content: userMsg }
+          ],
+          temperature: 0.65,
+          max_tokens: 1000,
+          response_format: { type: "json_object" } // Sécurise la sortie en JSON
         })
       });
 
       const data = await res.json();
-      console.log('Gemini raw response:', JSON.stringify(data));
+      console.log('Groq raw response:', JSON.stringify(data));
 
       if (data.error) {
         throw new Error('API Error: ' + data.error.message);
       }
 
-      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      console.log('Gemini text:', raw);
+      const raw = data?.choices?.[0]?.message?.content || '';
+      console.log('Groq text:', raw);
 
-      // Robust JSON extraction: strip markdown fences, then find the JSON object
+      // Robust JSON extraction
       let proto;
       try {
         const stripped = raw.replace(/```json|```/g, '').trim();
-        // Try to extract just the JSON object if there's surrounding text
         const match = stripped.match(/\{[\s\S]*\}/);
         const jsonStr = match ? match[0] : stripped;
         proto = JSON.parse(jsonStr);
       } catch (parseErr) {
         console.error('JSON parse failed:', parseErr, '\nRaw was:', raw);
-        // Show raw response in message so user sees something useful
         proto = {
           niveau: 'VERT', emoji: '🟢', statut: 'Réponse reçue',
           action_immediate: null,
@@ -807,7 +813,9 @@ Génère mon protocole de la journée en JSON.`;
         .filter(s => p.menu[s.key] && p.menu[s.key] !== 'null')
         .map(s => `<div class="meal-line"><span class="meal-slot">${s.icon} ${s.label}</span>${esc(p.menu[s.key])}</div>`)
         .join('');
-      html += rBlock('🍽️', 'Menu du Jour', menuLines);
+      if (menuLines) {
+        html += rBlock('🍽️', 'Menu du Jour', menuLines);
+      }
     }
 
     if (p.activite)    html += rBlock('🏃', 'Activité Physique', esc(p.activite));
