@@ -727,7 +727,7 @@ Génère mon protocole de la journée en JSON.`;
           'Authorization': `Bearer ${API_KEY}`
         },
         body: JSON.stringify({
-          model: "llama3-70b-8192", // Modèle rapide et intelligent sur Groq
+          model: "llama-3.3-70b-versatile", // Modèle rapide et intelligent sur Groq
           messages: [
             { role: "system", content: SYSTEM },
             { role: "user", content: userMsg }
