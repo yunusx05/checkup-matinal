@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Check-up Matinal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #0B0D0F;
+      --surface:   #13161A;
+      --surface2:  #1A1E23;
+      --border:    #252B33;
+      --border2:   #2E3740;
+      --text:      #E6EAF0;
+      --muted:     #5A6478;
+      --muted2:    #8592A8;
+
+      --green:     #4ADE80;
+      --green-dim: rgba(74,222,128,0.12);
+      --green-border: rgba(74,222,128,0.3);
+
+      --yellow:     #FBBF24;
+      --yellow-dim: rgba(251,191,36,0.1);
+      --yellow-border: rgba(251,191,36,0.3);
+
+      --orange:     #FB923C;
+      --orange-dim: rgba(251,146,60,0.1);
+      --orange-border: rgba(251,146,60,0.3);
+
+      --red:     #F87171;
+      --red-dim: rgba(248,113,113,0.1);
+      --red-border: rgba(248,113,113,0.3);
+
+      --accent:  #5EEAD4;
+      --radius:  14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ─── HEADER ──────────────────────────────────────── */
+    .app-header {
+      padding: 28px 20px 0;
+      text-align: center;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .app-header .date-chip {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 40px;
+      margin-bottom: 14px;
+    }
+
+    .app-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--text);
+    }
+
+    .app-header p {
+      font-size: 13px;
+      color: var(--muted2);
+      margin-top: 6px;
+      font-weight: 300;
+    }
+
+    /* ─── PROGRESS ────────────────────────────────────── */
+    .progress-wrap {
+      max-width: 480px;
+      margin: 24px auto 0;
+      padding: 0 20px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .progress-seg {
+      flex: 1;
+      height: 3px;
+      border-radius: 3px;
+      background: var(--border);
+      transition: background 0.35s ease;
+    }
+    .progress-seg.filled { background: var(--accent); }
+
+    /* ─── MAIN CONTAINER ──────────────────────────────── */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ─── QUESTION CARD ───────────────────────────────── */
+    .q-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 14px;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .q-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .q-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+
+    /* ─── OPTIONS ─────────────────────────────────────── */
+    .options { display: flex; flex-direction: column; gap: 8px; }
+
+    .opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      padding: 13px 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .opt:active { transform: scale(0.975); }
+
+    .opt.selected {
+      border-color: var(--accent);
+      background: rgba(94, 234, 212, 0.07);
+    }
+
+    .opt-radio {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border2);
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: border-color 0.2s, background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .opt.selected .opt-radio {
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+
+    .opt.selected .opt-radio::after {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--bg);
+    }
+
+    .opt-text {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.45;
+      flex: 1;
+    }
+
+    /* ─── DETAILS ─────────────────────────────────────── */
+    .details-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-top: 14px;
+    }
+
+    .details-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted2);
+      margin-bottom: 10px;
+    }
+
+    .optional-tag {
+      font-size: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 1px;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      padding: 12px 14px;
+      resize: none;
+      height: 80px;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.5;
+    }
+
+    textarea:focus { border-color: var(--accent); }
+    textarea::placeholder { color: var(--muted); }
+
+    /* ─── SUBMIT ──────────────────────────────────────── */
+    .submit-btn {
+      display: block;
+      width: 100%;
+      padding: 17px;
+      margin-top: 16px;
+      background: linear-gradient(135deg, #4ADE80 0%, #2DD4BF 100%);
+      color: #0B0D0F;
+      border: none;
+      border-radius: 13px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+
+    .submit-btn:disabled {
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .submit-btn:not(:disabled):active { transform: scale(0.975); }
+
+    /* ─── LOADING ─────────────────────────────────────── */
+    #loading-screen {
+      display: none;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    #loading-screen.show { display: flex; }
+
+    .loader-ring {
+      width: 52px;
+      height: 52px;
+      border: 3px solid var(--border2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loader-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--text);
+    }
+
+    .loader-sub {
+      font-size: 13px;
+      color: var(--muted2);
+      font-weight: 300;
+    }
+
+    /* ─── RESULT ──────────────────────────────────────── */
+    #result-screen {
+      display: none;
+      padding: 0 16px 20px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    #result-screen.show { display: block; }
+
+    .result-header-card {
+      border-radius: var(--radius);
+      padding: 28px 20px;
+      margin: 20px 0 16px;
+      text-align: center;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .result-header-card.green  { background: var(--green-dim);  border: 1px solid var(--green-border); }
+    .result-header-card.yellow { background: var(--yellow-dim); border: 1px solid var(--yellow-border); }
+    .result-header-card.orange { background: var(--orange-dim); border: 1px solid var(--orange-border); }
+    .result-header-card.red    { background: var(--red-dim);    border: 1px solid var(--red-border); }
+
+    .result-emoji { font-size: 44px; margin-bottom: 10px; line-height: 1; }
+
+    .result-niveau {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .result-niveau.green  { color: var(--green); }
+    .result-niveau.yellow { color: var(--yellow); }
+    .result-niveau.orange { color: var(--orange); }
+    .result-niveau.red    { color: var(--red); }
+
+    .result-statut {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    /* ─── RESULT BLOCKS ───────────────────────────────── */
+    .r-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 10px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .r-block-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .r-block-icon { font-size: 16px; }
+
+    .r-block-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted2);
+    }
+
+    .r-block-content {
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    .r-block-content .meal-line {
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .r-block-content .meal-line:last-child { border-bottom: none; }
+
+    .meal-slot {
+      font-size: 10px;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* ─── ACTION IMMÉDIATE highlight ─────────────────── */
+    .action-highlight {
+      background: rgba(94, 234, 212, 0.07);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    /* ─── MESSAGE CARD ────────────────────────────────── */
+    .message-card {
+      font-style: italic;
+      font-size: 15px;
+      color: var(--muted2);
+      font-family: 'Playfair Display', serif;
+      line-height: 1.6;
+    }
+
+    /* ─── RESTART ─────────────────────────────────────── */
+    .restart-btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      margin-top: 16px;
+      background: transparent;
+      color: var(--muted2);
+      border: 1.5px solid var(--border2);
+      border-radius: 13px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, transform 0.1s;
+    }
+
+    .restart-btn:hover { border-color: var(--muted); color: var(--text); }
+    .restart-btn:active { transform: scale(0.975); }
+
+    /* ─── UTILS ───────────────────────────────────────── */
+    .mt8 { margin-top: 8px; }
+    .mt20 { margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════
+       FORM SCREEN
+  ════════════════════════════════════════════ -->
+  <div id="form-screen">
+
+    <div class="app-header">
+      <div class="date-chip" id="today-date">Chargement...</div>
+      <h1>Check-up Matinal</h1>
+      <p>30 secondes pour calibrer ta journée</p>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-seg" id="seg-1"></div>
+      <div class="progress-seg" id="seg-2"></div>
+      <div class="progress-seg" id="seg-3"></div>
+      <div class="progress-seg" id="seg-4"></div>
+    </div>
+
+    <div class="container">
+
+      <!-- Q1 -->
+      <div class="q-card">
+        <div class="q-tag">Question 01 / 04</div>
+        <div class="q-text">Comment est ton ventre au toucher ce matin (côté gauche) ?</div>
+        <div class="options">
+          <div class="opt" onclick="pick('q1','A',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Plat, souple, aucun bruit</div>
+          </div>
+          <div class="opt" onclick="pick('q1','B',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Un peu lourd, sensation d'être "plein" de la veille, glouglous</div>
+          </div>
+          <div class="opt" onclick="pick('q1','C',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Tendu comme un tambour, dur sous les doigts, gonflé</div>
+          </div>
+          <div class="opt" onclick="pick('q1','D',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Douloureux, crampes, envie de se plier en deux</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="q-card">
+        <div class="q-tag">Question 02 / 04</div>
+        <div class="q-text">Bilan des toilettes ce matin ?</div>
+        <div class="options">
+          <div class="opt" onclick="pick('q2','A',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Impeccable, moulé, sans effort</div>
+          </div>
+          <div class="opt" onclick="pick('q2','B',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Rien du tout — impression de "bouchon" ou de lenteur</div>
+          </div>
+          <div class="opt" onclick="pick('q2','C',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Selles acides (ça brûle un peu), ou molles / collantes</div>
+          </div>
+          <div class="opt" onclick="pick('q2','D',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Diarrhée ou urgence totale</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="q-card">
+        <div class="q-tag">Question 03 / 04</div>
+        <div class="q-text">Comment est ton énergie globale aujourd'hui ?</div>
+        <div class="options">
+          <div class="opt" onclick="pick('q3','A',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">En pleine forme — prêt pour une grosse séance ou une longue journée</div>
+          </div>
+          <div class="opt" onclick="pick('q3','B',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Un peu fatigué, muscles lourds — système nerveux en récupération</div>
+          </div>
+          <div class="opt" onclick="pick('q3','C',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Épuisé, brouillard mental, zéro motivation</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="q-card">
+        <div class="q-tag">Question 04 / 04</div>
+        <div class="q-text">Que s'est-il passé hier soir ?</div>
+        <div class="options">
+          <div class="opt" onclick="pick('q4','A',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Repas parfait — protéines + riz, zéro écart</div>
+          </div>
+          <div class="opt" onclick="pick('q4','B',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Repas lourd ou riche en graisses (repas de famille, sauce, arachide)</div>
+          </div>
+          <div class="opt" onclick="pick('q4','C',this)">
+            <div class="opt-radio"></div>
+            <div class="opt-text">Aliment déclencheur (oignon, ail, blé, ou trop de sucre)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Détails optionnels -->
+      <div class="details-card">
+        <div class="details-label">
+          Détails supplémentaires
+          <span class="optional-tag">OPTIONNEL</span>
+        </div>
+        <textarea
+          id="extra"
+          placeholder="Ex : j'ai mangé des lentilles hier midi, j'ai mal dormi, repas de famille ce soir, je suis en déplacement..."
+        ></textarea>
+      </div>
+
+      <!-- Submit -->
+      <button class="submit-btn" id="submit-btn" onclick="runAnalysis()" disabled>
+        Analyser ma journée →
+      </button>
+
+    </div><!-- /container -->
+  </div><!-- /form-screen -->
+
+
+  <!-- ════════════════════════════════════════════
+       LOADING SCREEN
+  ════════════════════════════════════════════ -->
+  <div id="loading-screen">
+    <div class="loader-ring"></div>
+    <div class="loader-title">Analyse en cours…</div>
+    <div class="loader-sub">Le Garde du Corps Digestif calibre ton protocole</div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════
+       RESULT SCREEN
+  ════════════════════════════════════════════ -->
+  <div id="result-screen">
+
+    <div style="max-width:480px; margin:0 auto; padding:0 16px">
+
+      <div style="text-align:center; padding-top:24px;">
+        <div class="date-chip" id="result-date-chip" style="display:inline-block; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); background:var(--surface); border:1px solid var(--border); padding:5px 12px; border-radius:40px; margin-bottom:14px;"></div>
+        <div style="font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--text);">Ton Protocole du Jour</div>
+      </div>
+
+      <div id="result-top" class="result-header-card">
+        <div id="r-emoji" class="result-emoji"></div>
+        <div id="r-niveau" class="result-niveau"></div>
+        <div id="r-statut" class="result-statut"></div>
+      </div>
+
+      <div id="r-blocks"></div>
+
+      <button class="restart-btn" onclick="restart()">↩ Nouveau check-up</button>
+
+    </div>
+  </div>
+
+
+  <script>
+  // ─── CONFIG ────────────────────────────────────────────
+  const API_KEY = 'AIzaSyA6Sw211p5S4d5GRV7-m_5WppkqIJu7feU';
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+  const SYSTEM = `# IDENTITÉ ET MISSION
+Tu es le "Garde du Corps Digestif", un nutritionniste expert du Syndrome de l'Intestin Irritable (SII), spécialisé dans l'approche Low FODMAP, l'inflammation digestive et le métabolisme sportif.
+Ta mission est d'accompagner quotidiennement l'utilisateur pour gérer son transit via un check-up matinal, tout en optimisant sa recomposition corporelle.
+
+# PROFIL DE L'UTILISATEUR (YUNUS)
+Tu dois impérativement adapter toutes tes réponses à ce profil exact :
+- Biométrie & Sport : Homme, 1m83, environ 89 kg (dont 73 kg de masse musculaire). Pratique la musculation (Tempo) 4x/semaine. Fait 2h30 de marche par jour (environ 15 000 pas).
+- Religion : De confession musulmane. Toutes les recommandations alimentaires doivent être strictement Halal (zéro porc, zéro alcool, gélatine végétale ou bovine halal uniquement). Pratique des jeûnes secs réguliers.
+- Alimentation : Régime "Low Carb / High Protein" (environ 160g de protéines/jour, et 80-100g de glucides propres via riz blanc ou pomme de terre).
+- Intolérances strictes (SII) : Zéro blé/gluten, Zéro lactose, Zéro ail, Zéro oignon. (La cacahuète, la poudre d'amande <24g et les graines de chia sont tolérées et utilisées comme alliés).
+
+# LA MÉTHODE DU VASE
+Tu raisonnes toujours selon l'état d'inflammation, divisé en 4 niveaux :
+- VERT (0-30%) : Vase vide. Ventre plat, aucune douleur. Transit normal. Autorisation de repas plaisirs/cheat meals.
+- JAUNE (40-60%) : Le Bouchon. Ventre lourd, gaz bloqués, légère constipation. Diète stricte, chia, viandes/riz.
+- ORANGE (70-90%) : Danger. Ventre tendu, corde dure à gauche. Mode pansement : L-Glutamine, riz blanc, zéro gras.
+- ROUGE (100%) : Crise. Douleurs, spasmes. Jeûne, eau chaude, bouillotte.
+
+# RÈGLES
+- Toujours halal, sans blé, sans lactose, sans ail, sans oignon.
+- Recettes simples : "Base simple + 1 Twist". Pas de techniques compliquées.
+- Desserts : toujours sans blé/lactose (mugcakes micro-ondes, yaourt végétal, etc.)
+- Propose des solutions "imparfaites mais sûres" si l'utilisateur est fatigué.
+
+# FORMAT DE RÉPONSE OBLIGATOIRE
+Réponds UNIQUEMENT avec un objet JSON valide. Zéro texte avant ou après. Zéro backticks markdown. Format exact :
+{
+  "niveau": "VERT",
+  "emoji": "🟢",
+  "statut": "La Voie est Libre !",
+  "action_immediate": null,
+  "menu": {
+    "matin": "description",
+    "midi": "description",
+    "soir": "description",
+    "dessert": "description ou null"
+  },
+  "activite": "description",
+  "hydratation": "description",
+  "message": "Message bienveillant en 1-2 phrases."
+}
+Les valeurs de "niveau" acceptées : VERT, JAUNE, ORANGE, ROUGE.
+"action_immediate" est null si niveau VERT, sinon une action concrète courte.`;
+
+  // ─── STATE ──────────────────────────────────────────────
+  const ans = { q1: null, q2: null, q3: null, q4: null };
+
+  const Q_LABELS = {
+    q1: { A:'Ventre plat et souple', B:'Ventre lourd / glouglous', C:'Ventre tendu / gonflé', D:'Douloureux / crampes' },
+    q2: { A:'Transit impeccable',    B:'Constipé / bouchon',       C:'Selles acides ou molles', D:'Diarrhée / urgence' },
+    q3: { A:'Pleine forme',          B:'Fatigué / récupération',   C:'Épuisé / brouillard' },
+    q4: { A:'Repas propre',          B:'Repas lourd / gras',       C:'Aliment déclencheur' }
+  };
+
+  // ─── DATE ───────────────────────────────────────────────
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const dateDisplay = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+  document.getElementById('today-date').textContent = dateDisplay;
+
+  // ─── PICK ───────────────────────────────────────────────
+  function pick(q, val, el) {
+    ans[q] = val;
+    el.closest('.options').querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    syncProgress();
+    syncSubmit();
+  }
+
+  function syncProgress() {
+    ['q1','q2','q3','q4'].forEach((q, i) => {
+      document.getElementById(`seg-${i+1}`).classList.toggle('filled', ans[q] !== null);
+    });
+  }
+
+  function syncSubmit() {
+    document.getElementById('submit-btn').disabled = Object.values(ans).some(v => v === null);
+  }
+
+  // ─── ANALYSE ────────────────────────────────────────────
+  async function runAnalysis() {
+    const extra = document.getElementById('extra').value.trim();
+
+    const userMsg = `Voici mes réponses au check-up du matin :
+
+Q1 — Ventre ce matin : ${ans.q1} → ${Q_LABELS.q1[ans.q1]}
+Q2 — Transit / Toilettes : ${ans.q2} → ${Q_LABELS.q2[ans.q2]}
+Q3 — Énergie globale : ${ans.q3} → ${Q_LABELS.q3[ans.q3]}
+Q4 — Repas hier soir : ${ans.q4} → ${Q_LABELS.q4[ans.q4]}
+${extra ? `\nDétails supplémentaires : ${extra}` : ''}
+
+Génère mon protocole de la journée en JSON.`;
+
+    // switch screens
+    document.getElementById('form-screen').style.display = 'none';
+    document.getElementById('loading-screen').classList.add('show');
+
+    try {
+      const res = await fetch(GEMINI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM }] },
+          contents: [{ role: 'user', parts: [{ text: userMsg }] }],
+          generationConfig: { temperature: 0.65, maxOutputTokens: 900 }
+        })
+      });
+
+      const data = await res.json();
+      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const clean = raw.replace(/```json|```/g, '').trim();
+
+      let proto;
+      try { proto = JSON.parse(clean); }
+      catch {
+        proto = {
+          niveau: 'VERT', emoji: '🟢', statut: 'Analyse complétée',
+          action_immediate: null,
+          menu: { matin: '—', midi: '—', soir: '—', dessert: null },
+          activite: '—', hydratation: '—', message: raw
+        };
+      }
+
+      renderResult(proto);
+
+    } catch (err) {
+      document.getElementById('loading-screen').classList.remove('show');
+      document.getElementById('form-screen').style.display = 'block';
+      alert('Erreur de connexion. Vérifie ta connexion internet et réessaie.');
+    }
+  }
+
+  // ─── RENDER RESULT ──────────────────────────────────────
+  function renderResult(p) {
+    document.getElementById('loading-screen').classList.remove('show');
+
+    const colorMap = { VERT:'green', JAUNE:'yellow', ORANGE:'orange', ROUGE:'red' };
+    const color = colorMap[p.niveau] || 'green';
+
+    document.getElementById('result-date-chip').textContent = dateDisplay;
+    document.getElementById('r-emoji').textContent = p.emoji || '🟢';
+    document.getElementById('r-statut').textContent = p.statut || '';
+
+    const niveauEl = document.getElementById('r-niveau');
+    niveauEl.textContent = `Niveau ${p.niveau}`;
+    niveauEl.className = `result-niveau ${color}`;
+
+    document.getElementById('result-top').className = `result-header-card ${color}`;
+
+    // Build blocks
+    let html = '';
+
+    if (p.action_immediate) {
+      html += rBlock('⚡', 'Action Immédiate',
+        `<div class="action-highlight">${esc(p.action_immediate)}</div>`
+      );
+    }
+
+    if (p.menu) {
+      const slots = [
+        { key:'matin',   icon:'🌅', label:'Matin' },
+        { key:'midi',    icon:'☀️', label:'Midi' },
+        { key:'soir',    icon:'🌙', label:'Soir' },
+        { key:'dessert', icon:'🍮', label:'Dessert' },
+      ];
+      const menuLines = slots
+        .filter(s => p.menu[s.key] && p.menu[s.key] !== 'null')
+        .map(s => `<div class="meal-line"><span class="meal-slot">${s.icon} ${s.label}</span>${esc(p.menu[s.key])}</div>`)
+        .join('');
+      html += rBlock('🍽️', 'Menu du Jour', menuLines);
+    }
+
+    if (p.activite)    html += rBlock('🏃', 'Activité Physique', esc(p.activite));
+    if (p.hydratation) html += rBlock('💧', 'Hydratation',       esc(p.hydratation));
+    if (p.message)     html += rBlock('💬', 'Message du Jour',   `<span class="message-card">${esc(p.message)}</span>`);
+
+    document.getElementById('r-blocks').innerHTML = html;
+
+    // animate with delay
+    document.querySelectorAll('.r-block').forEach((el, i) => {
+      el.style.animationDelay = `${i * 0.07}s`;
+    });
+
+    document.getElementById('result-screen').classList.add('show');
+    window.scrollTo(0, 0);
+  }
+
+  function rBlock(icon, title, contentHtml) {
+    return `
+      <div class="r-block">
+        <div class="r-block-header">
+          <span class="r-block-icon">${icon}</span>
+          <span class="r-block-title">${title}</span>
+        </div>
+        <div class="r-block-content">${contentHtml}</div>
+      </div>`;
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/\n/g,'<br>');
+  }
+
+  // ─── RESTART ────────────────────────────────────────────
+  function restart() {
+    ans.q1 = ans.q2 = ans.q3 = ans.q4 = null;
+    document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+    document.getElementById('extra').value = '';
+    document.getElementById('submit-btn').disabled = true;
+    syncProgress();
+    document.getElementById('result-screen').classList.remove('show');
+    document.getElementById('form-screen').style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+  </script>
+
+</body>
+</html>
