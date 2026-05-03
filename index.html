@@ -726,31 +726,48 @@ Génère mon protocole de la journée en JSON.`;
         body: JSON.stringify({
           system_instruction: { parts: [{ text: SYSTEM }] },
           contents: [{ role: 'user', parts: [{ text: userMsg }] }],
-          generationConfig: { temperature: 0.65, maxOutputTokens: 900 }
+          generationConfig: { temperature: 0.65, maxOutputTokens: 1000, response_mime_type: 'application/json' }
         })
       });
 
       const data = await res.json();
-      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const clean = raw.replace(/```json|```/g, '').trim();
+      console.log('Gemini raw response:', JSON.stringify(data));
 
+      // Check for API errors
+      if (data.error) {
+        throw new Error(`API Error: ${data.error.message}`);
+      }
+
+      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      console.log('Gemini text:', raw);
+
+      // Robust JSON extraction: strip markdown fences, then find the JSON object
       let proto;
-      try { proto = JSON.parse(clean); }
-      catch {
+      try {
+        const stripped = raw.replace(/```json|```/g, '').trim();
+        // Try to extract just the JSON object if there's surrounding text
+        const match = stripped.match(/\{[\s\S]*\}/);
+        const jsonStr = match ? match[0] : stripped;
+        proto = JSON.parse(jsonStr);
+      } catch (parseErr) {
+        console.error('JSON parse failed:', parseErr, '\nRaw was:', raw);
+        // Show raw response in message so user sees something useful
         proto = {
-          niveau: 'VERT', emoji: '🟢', statut: 'Analyse complétée',
+          niveau: 'VERT', emoji: '🟢', statut: 'Réponse reçue',
           action_immediate: null,
-          menu: { matin: '—', midi: '—', soir: '—', dessert: null },
-          activite: '—', hydratation: '—', message: raw
+          menu: { matin: null, midi: null, soir: null, dessert: null },
+          activite: null, hydratation: null,
+          message: raw || 'Aucune réponse reçue de l\'IA. Vérifie la clé API dans la console.'
         };
       }
 
       renderResult(proto);
 
     } catch (err) {
+      console.error('Fetch error:', err);
       document.getElementById('loading-screen').classList.remove('show');
       document.getElementById('form-screen').style.display = 'block';
-      alert('Erreur de connexion. Vérifie ta connexion internet et réessaie.');
+      alert(`Erreur : ${err.message}\n\nVérifie la console (F12) pour plus de détails.`);
     }
   }
 
